@@ -10,6 +10,12 @@ from typing import List, Tuple, Dict, Optional
 from shapely.wkt import loads as wkt_loads
 from shapely.errors import ShapelyError
 import json
+# DEM processing imports
+import requests
+import rasterio
+import rasterio.merge
+from shapely.geometry import box
+import math
 
 
 def setup_logging(log_dir: str = './logs') -> logging.Logger:
@@ -335,6 +341,119 @@ def are_valid_dates(start_str: str, end_str: str) -> Tuple[bool, Optional[str]]:
         return False, error_msg
 
 
+def get_required_dem_tiles(bounds: Tuple[float, float, float, float]) -> List[str]:
+    """Calculate the names of Copernicus 1x1 degree tiles needed to cover the bounds."""
+    logger = logging.getLogger('SAR_Processor')
+    west, south, east, north = bounds
+
+    # Floor/ceil to get the grid of tiles
+    lon_start = math.floor(west)
+    lon_end = math.ceil(east)
+    lat_start = math.floor(south)
+    lat_end = math.ceil(north)
+
+    tiles = []
+    for lon in range(lon_start, lon_end):
+        for lat in range(lat_start, lat_end):
+            ns = 'N' if lat >= 0 else 'S'
+            ew = 'E' if lon >= 0 else 'W'
+            # Format tile name like N23_E072
+            tile_name = f"{ns}{abs(lat):02d}_{ew}{abs(lon):03d}"
+            tiles.append(tile_name)
+
+    logger.info(f"Calculated required DEM tiles: {tiles}")
+    return tiles
+
+
+def download_dem_from_aws(wkt_aoi: str, output_dir: str = './DEM_DATA') -> Optional[str]:
+    """
+    Downloads and clips Copernicus GLO-30 DEM from the public AWS S3 bucket.
+    
+    Args:
+        wkt_aoi: WKT polygon string defining area of interest
+        output_dir: Directory for downloaded DEM files
+    
+    Returns:
+        Path to the downloaded and clipped DEM file, or None if failed
+    """
+    logger = logging.getLogger('SAR_Processor')
+
+    try:
+        aoi_geom = wkt_loads(wkt_aoi)
+        bounds = aoi_geom.bounds
+    except ShapelyError as e:
+        logger.error(f"Invalid WKT string: {e}")
+        return None
+
+    # 1. Determine which tiles are needed
+    tile_names = get_required_dem_tiles(bounds)
+    if not tile_names:
+        logger.error("Could not determine required DEM tiles.")
+        return None
+
+    # 2. Construct S3 URLs and open them remotely with rasterio
+    s3_base_url = "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/"
+    remote_datasets = []
+    for tile in tile_names:
+        # Example filename: Copernicus_DSM_COG_10_N23_00_E072_00_DEM.tif
+        url = f"{s3_base_url}Copernicus_DSM_COG_10_{tile.split('_')[0]}_00_{tile.split('_')[1]}_00_DEM/Copernicus_DSM_COG_10_{tile.split('_')[0]}_00_{tile.split('_')[1]}_00_DEM.tif"
+        logger.info(f"Checking for remote tile: {url}")
+
+        # Check if URL exists before trying to open
+        try:
+            head_response = requests.head(url)
+            if head_response.status_code == 200:
+                remote_datasets.append(rasterio.open(url))
+            else:
+                logger.warning(f"Tile not found at {url} (Status: {head_response.status_code}). Skipping.")
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Could not connect to {url}. Skipping. Reason: {e}")
+
+    if not remote_datasets:
+        logger.error("No valid DEM tiles found for the AOI on AWS S3.")
+        return None
+
+    # 3. Merge and clip the remote datasets
+    logger.info(f"Merging and clipping {len(remote_datasets)} remote tile(s)...")
+    try:
+        # rasterio.merge.merge is powerful: it reads, merges, and clips in one step
+        merged_data, merged_transform = rasterio.merge.merge(remote_datasets, bounds=bounds, precision=7)
+
+        # Update metadata for the new clipped raster
+        profile = remote_datasets[0].profile
+        profile.update({
+            "height": merged_data.shape[1],
+            "width": merged_data.shape[2],
+            "transform": merged_transform,
+            "driver": "GTiff",
+            "compress": "lzw"
+        })
+
+        # Close remote connections
+        for ds in remote_datasets:
+            ds.close()
+
+    except Exception as e:
+        logger.error(f"Failed during merge and clip process: {e}")
+        return None
+
+    # 4. Save the final clipped GeoTIFF
+    os.makedirs(output_dir, exist_ok=True)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_filepath = os.path.join(output_dir, f"DEM_COP30_AWS_{timestamp}.tif")
+
+    logger.info(f"Saving final clipped DEM to: {output_filepath}")
+    with rasterio.open(output_filepath, "w", **profile) as dst:
+        dst.write(merged_data)
+
+    if os.path.exists(output_filepath):
+        logger.info("Successfully created final DEM file.")
+        return output_filepath
+    else:
+        logger.error("Failed to save final DEM file.")
+        return None
+
+
 def download_vv_geotiffs(wkt_aoi: str, start_date: str, end_date: str, 
                          download_dir: str = './SAR_DATA_VV') -> Dict[str, any]:
     """
@@ -503,7 +622,7 @@ def main():
     """Main execution function with comprehensive error handling."""
     # Initialize logging
     logger = setup_logging()
-    logger.info("🛰️ Starting SAR Data Processing Pipeline")
+    logger.info("🛰️🗻 Starting Integrated SAR & DEM Data Processing Pipeline")
     logger.info("=" * 60)
     
     # Configuration
@@ -511,90 +630,187 @@ def main():
         'WKT': "POLYGON((72.521 23.042, 72.535 23.042, 72.535 23.032, 72.521 23.032, 72.521 23.042))",
         'START_DATE': '2025-08-01T00:00:00Z',
         'END_DATE': '2025-09-30T23:59:59Z',
-        'DOWNLOAD_DIR': './SAR_DATA',
-        'POLARIZATIONS': ['VV', 'VH']  # Download both VV and VH
+        'SAR_DOWNLOAD_DIR': './SAR_DATA',
+        'DEM_DOWNLOAD_DIR': './DEM_DATA',
+        'POLARIZATIONS': ['VV', 'VH'],  # Download both VV and VH
+        'DOWNLOAD_DEM': True,  # Enable/disable DEM download
+        'DOWNLOAD_SAR': True   # Enable/disable SAR download
     }
     
     # Log configuration
     logger.info(f"Area of Interest: {config['WKT']}")
     logger.info(f"Date Range: {config['START_DATE']} to {config['END_DATE']}")
-    logger.info(f"Download Directory: {os.path.abspath(config['DOWNLOAD_DIR'])}")
+    logger.info(f"SAR Download Directory: {os.path.abspath(config['SAR_DOWNLOAD_DIR'])}")
+    logger.info(f"DEM Download Directory: {os.path.abspath(config['DEM_DOWNLOAD_DIR'])}")
     logger.info(f"Polarizations: {config['POLARIZATIONS']}")
+    logger.info(f"Download SAR: {config['DOWNLOAD_SAR']}")
+    logger.info(f"Download DEM: {config['DOWNLOAD_DEM']}")
     
     try:
-        # Execute download for multiple polarizations
-        result = download_sar_geotiffs(
-            wkt_aoi=config['WKT'],
-            start_date=config['START_DATE'],
-            end_date=config['END_DATE'],
-            polarizations=config['POLARIZATIONS'],
-            download_dir=config['DOWNLOAD_DIR']
-        )
+        results = {}
         
-        if not result['success']:
-            logger.error(f"Processing failed: {result.get('error', 'Unknown error')}")
-            return 1
+        # Execute SAR download if enabled
+        if config['DOWNLOAD_SAR']:
+            logger.info("\n📡 Starting SAR data acquisition...")
+            sar_result = download_sar_geotiffs(
+                wkt_aoi=config['WKT'],
+                start_date=config['START_DATE'],
+                end_date=config['END_DATE'],
+                polarizations=config['POLARIZATIONS'],
+                download_dir=config['SAR_DOWNLOAD_DIR']
+            )
+            
+            if not sar_result['success']:
+                logger.error(f"SAR processing failed: {sar_result.get('error', 'Unknown error')}")
+                return 1
+            results['sar'] = sar_result
+        
+        # Execute DEM download if enabled
+        if config['DOWNLOAD_DEM']:
+            logger.info("\n🗻 Starting DEM data acquisition...")
+            dem_filepath = download_dem_from_aws(
+                wkt_aoi=config['WKT'],
+                output_dir=config['DEM_DOWNLOAD_DIR']
+            )
+            
+            if dem_filepath:
+                dem_size = os.path.getsize(dem_filepath)
+                results['dem'] = {
+                    'success': True,
+                    'filepath': dem_filepath,
+                    'size_bytes': dem_size
+                }
+                logger.info(f"✅ DEM download successful: {os.path.basename(dem_filepath)} ({dem_size:,} bytes)")
+            else:
+                logger.error("DEM download failed")
+                results['dem'] = {'success': False}
         
         # Process results
-        downloaded_files = result['downloaded_files']
-        polarizations = result.get('polarizations', [])
+        total_success = True
+        total_files_downloaded = 0
+        total_data_size = 0
         
-        # Check if any files were downloaded
-        total_downloaded = sum(len(files) for files in downloaded_files.values()) if isinstance(downloaded_files, dict) else len(downloaded_files)
+        # Process SAR results
+        if 'sar' in results and results['sar']['success']:
+            sar_result = results['sar']
+            downloaded_files = sar_result['downloaded_files']
+            polarizations = sar_result.get('polarizations', [])
+            
+            # Count SAR files
+            sar_files_count = sum(len(files) for files in downloaded_files.values()) if isinstance(downloaded_files, dict) else len(downloaded_files)
+            total_files_downloaded += sar_files_count
+            total_data_size += sar_result.get('total_size_bytes', 0)
         
-        if total_downloaded > 0:
+        # Process DEM results
+        if 'dem' in results and results['dem']['success']:
+            total_files_downloaded += 1
+            total_data_size += results['dem']['size_bytes']
+        
+        if total_files_downloaded > 0:
             logger.info("\n" + "=" * 60)
-            logger.info("🎉 PROCESSING COMPLETE")
+            logger.info("🎉 DATA ACQUISITION COMPLETE")
             logger.info("=" * 60)
-            logger.info(f"Successfully processed {result['scene_count']} scenes")
-            logger.info(f"Downloaded {total_downloaded} GeoTIFF files across {len(polarizations)} polarizations")
-            logger.info(f"Total data size: {result['total_size_bytes']:,} bytes ({result['total_size_bytes']/1024/1024:.1f} MB)")
             
-            # Report skipped files
-            if result.get('skipped_files'):
-                if isinstance(result['skipped_files'], dict):
-                    total_skipped = sum(len(files) for files in result['skipped_files'].values())
-                else:
-                    total_skipped = len(result['skipped_files'])
+            # Report SAR results
+            if 'sar' in results and results['sar']['success']:
+                sar_result = results['sar']
+                sar_files = sum(len(files) for files in sar_result['downloaded_files'].values()) if isinstance(sar_result['downloaded_files'], dict) else len(sar_result['downloaded_files'])
+                logger.info(f"📡 SAR Data: {sar_files} files from {sar_result['scene_count']} scenes")
+                logger.info(f"   Polarizations: {sar_result.get('polarizations', [])}")
+                logger.info(f"   Size: {sar_result['total_size_bytes']:,} bytes ({sar_result['total_size_bytes']/1024/1024:.1f} MB)")
+            
+            # Report DEM results
+            if 'dem' in results and results['dem']['success']:
+                dem_result = results['dem']
+                logger.info(f"🗻 DEM Data: 1 file (Copernicus GLO-30)")
+                logger.info(f"   File: {os.path.basename(dem_result['filepath'])}")
+                logger.info(f"   Size: {dem_result['size_bytes']:,} bytes ({dem_result['size_bytes']/1024/1024:.1f} MB)")
+            
+            logger.info(f"\n📊 Total: {total_files_downloaded} files, {total_data_size:,} bytes ({total_data_size/1024/1024:.1f} MB)")
+            
+            # Report skipped files and failures
+            total_skipped = 0
+            total_failed = 0
+            
+            if 'sar' in results and results['sar']['success']:
+                sar_result = results['sar']
+                if sar_result.get('skipped_files'):
+                    if isinstance(sar_result['skipped_files'], dict):
+                        sar_skipped = sum(len(files) for files in sar_result['skipped_files'].values())
+                    else:
+                        sar_skipped = len(sar_result['skipped_files'])
+                    total_skipped += sar_skipped
+                
+                if sar_result.get('failed_downloads'):
+                    total_failed += len(sar_result['failed_downloads'])
+            
+            if total_skipped > 0:
                 logger.info(f"Skipped {total_skipped} existing files")
-            
-            if result.get('failed_downloads'):
-                logger.warning(f"Failed to download {len(result['failed_downloads'])} files")
+            if total_failed > 0:
+                logger.warning(f"Failed to download {total_failed} files")
             
             logger.info("\n📁 Downloaded files ready for analysis:")
             
-            # Display files by polarization
-            if isinstance(downloaded_files, dict):
-                file_counter = 1
-                for pol in polarizations:
-                    if downloaded_files[pol]:
-                        logger.info(f"\n  {pol} Polarization:")
-                        for path in downloaded_files[pol]:
-                            file_size = os.path.getsize(path) if os.path.exists(path) else 0
-                            logger.info(f"    {file_counter:2d}. {os.path.basename(path)} ({file_size:,} bytes)")
-                            file_counter += 1
-            else:
-                # Fallback for single polarization
-                for i, path in enumerate(downloaded_files, 1):
-                    file_size = os.path.getsize(path) if os.path.exists(path) else 0
-                    logger.info(f"  {i:2d}. {os.path.basename(path)} ({file_size:,} bytes)")
+            file_counter = 1
             
-            # Suggest next steps based on available polarizations
+            # Display SAR files by polarization
+            if 'sar' in results and results['sar']['success']:
+                sar_result = results['sar']
+                downloaded_files = sar_result['downloaded_files']
+                polarizations = sar_result.get('polarizations', [])
+                
+                if isinstance(downloaded_files, dict):
+                    for pol in polarizations:
+                        if downloaded_files[pol]:
+                            logger.info(f"\n  📡 {pol} Polarization SAR Data:")
+                            for path in downloaded_files[pol]:
+                                file_size = os.path.getsize(path) if os.path.exists(path) else 0
+                                logger.info(f"    {file_counter:2d}. {os.path.basename(path)} ({file_size:,} bytes)")
+                                file_counter += 1
+            
+            # Display DEM file
+            if 'dem' in results and results['dem']['success']:
+                dem_result = results['dem']
+                logger.info(f"\n  🗻 DEM Data:")
+                logger.info(f"    {file_counter:2d}. {os.path.basename(dem_result['filepath'])} ({dem_result['size_bytes']:,} bytes)")
+                file_counter += 1
+            
+            # Suggest next steps based on available data
             logger.info("\n🔬 Suggested next steps:")
-            logger.info("  1. Perform radiometric calibration (DN to σ⁰)")
-            logger.info("  2. Apply speckle filtering (Lee, Frost, or Gamma MAP)")
             
-            if 'VV' in polarizations and 'VH' in polarizations:
-                logger.info("  3. Calculate dual-polarization ratios (VV/VH)")
-                logger.info("  4. Implement polarimetric change detection")
-                logger.info("  5. Generate RGB composites (VV, VH, VV/VH)")
-                logger.info("  6. Analyze surface scattering mechanisms")
-            else:
-                logger.info("  3. Implement change detection analysis")
-                logger.info("  4. Calculate temporal coherence")
+            if 'sar' in results and results['sar']['success']:
+                logger.info("  📡 SAR Processing:")
+                logger.info("    1. Perform radiometric calibration (DN to σ⁰)")
+                logger.info("    2. Apply speckle filtering (Lee, Frost, or Gamma MAP)")
+                
+                if 'sar' in results:
+                    polarizations = results['sar'].get('polarizations', [])
+                    if 'VV' in polarizations and 'VH' in polarizations:
+                        logger.info("    3. Calculate dual-polarization ratios (VV/VH)")
+                        logger.info("    4. Implement polarimetric change detection")
+                        logger.info("    5. Generate RGB composites (VV, VH, VV/VH)")
+                    else:
+                        logger.info("    3. Implement change detection analysis")
+                        logger.info("    4. Calculate temporal coherence")
             
-            logger.info("  7. Generate landslide susceptibility maps")
-            logger.info("  8. Validate results with ground truth data")
+            if 'dem' in results and results['dem']['success']:
+                logger.info("  🗻 DEM Processing:")
+                logger.info("    1. Calculate slope and aspect maps")
+                logger.info("    2. Generate hillshade visualization")
+                logger.info("    3. Extract elevation profiles")
+                logger.info("    4. Calculate terrain roughness indices")
+            
+            if 'sar' in results and 'dem' in results and results['sar']['success'] and results['dem']['success']:
+                logger.info("  🔗 Integrated Analysis:")
+                logger.info("    1. Terrain-corrected SAR processing")
+                logger.info("    2. Topographic normalization of backscatter")
+                logger.info("    3. Slope-dependent landslide susceptibility mapping")
+                logger.info("    4. Multi-temporal InSAR with DEM co-registration")
+            
+            logger.info("  🎯 Final Products:")
+            logger.info("    • Generate landslide susceptibility maps")
+            logger.info("    • Create hazard assessment reports")
+            logger.info("    • Validate results with ground truth data")
             
         else:
             logger.warning("\n⚠️  No new data was downloaded")
