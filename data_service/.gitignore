@@ -1,0 +1,71 @@
+# .gitignore for data_service
+# Ignore common Python artifacts, virtual environments, logs, data outputs, and IDE/editor files.
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+
+# Logs
+logs/
+*.log
+
+# Runtime files
+*.pid
+*.sock
+
+# Database / data files
+data/
+outputs/
+*.sqlite
+*.db
+*.db3
+*.sqlite3
+*.pkl
+*.npz
+
+# Secrets / environment variables
+.env
+.env.*
+secrets/
+*.pem
+*.key
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+htmlcov/
+
+# Type checkers
+.mypy_cache/
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints
+
+# OS files
+.DS_Store
+Thumbs.db
