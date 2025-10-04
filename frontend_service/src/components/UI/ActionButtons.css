@@ -1,0 +1,84 @@
+/* Action Buttons Styles */
+.action-buttons {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.confirm-button,
+.clear-button {
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.confirm-button {
+    background-color: #4CAF50;
+    color: white;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.confirm-button:hover:not(:disabled) {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.5);
+}
+
+.confirm-button:focus-visible {
+    outline: 3px solid #4CAF50;
+    outline-offset: 2px;
+}
+
+.clear-button {
+    background-color: #f44336;
+    color: white;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.clear-button:hover:not(:disabled) {
+    background-color: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(244, 67, 54, 0.5);
+}
+
+.clear-button:focus-visible {
+    outline: 3px solid #f44336;
+    outline-offset: 2px;
+}
+
+.confirm-button:active:not(:disabled),
+.clear-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.confirm-button:disabled,
+.clear-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        bottom: 20px;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .confirm-button,
+    .clear-button {
+        padding: 12px 28px;
+        font-size: 14px;
+    }
+}
