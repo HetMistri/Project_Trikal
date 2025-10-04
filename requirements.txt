@@ -1,0 +1,6 @@
+fastapi[all]
+numpy
+pandas
+rasterio
+xgboost
+scikit-learn
