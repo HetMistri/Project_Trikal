@@ -43,17 +43,33 @@ class AOIFormatView(APIView):
     def post(self, request):
         # Expected input:
         # {
-        #   "coordinates": [[72.521, 23.042], [72.535, 23.042], [72.535, 23.032], [72.521, 23.032], [72.521, 23.042]]
+        #   "latitude": 23.0225,
+        #   "longitude": 72.5714
         # }
 
-        coords = request.data.get("coordinates")
+        lat = request.data.get("latitude")
+        lon = request.data.get("longitude")
 
-        if not coords:
-            return Response({"error": "Missing coordinates"}, status=status.HTTP_400_BAD_REQUEST)
+        if lat is None or lon is None:
+            return Response({"error": "Missing latitude or longitude"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            lat = float(lat)
+            lon = float(lon)
+
+            # Create a small bounding box (0.01 deg offset)
+            offset = 0.01
+            coords = [
+                (lon - offset, lat - offset),
+                (lon + offset, lat - offset),
+                (lon + offset, lat + offset),
+                (lon - offset, lat + offset),
+                (lon - offset, lat - offset)  # close the polygon
+            ]
+
             polygon = Polygon(coords)
             wkt_format = polygon.wkt
+
         except Exception as e:
             return Response({"error": f"Invalid coordinates: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
