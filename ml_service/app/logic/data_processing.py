@@ -9,19 +9,20 @@ def match_shapes(array1: np.ndarray, array2: np.ndarray) -> tuple[np.ndarray, np
     cropped_array2 = array2[:min_height, :min_width]
     return cropped_array1, cropped_array2
 
-def assemble_feature_table(slope: np.ndarray, backscatter_change: np.ndarray, coherence: np.ndarray, ratio_change: np.ndarray) -> pd.DataFrame:
+def assemble_feature_table(slope: np.ndarray, backscatter_change: np.ndarray, correlation: np.ndarray, ratio_change: np.ndarray) -> pd.DataFrame:
     """Assembles feature arrays into a single pandas DataFrame."""
     feature_data = {
         'slope': slope.flatten(),
         'backscatter_change': backscatter_change.flatten(),
-        'coherence': coherence.flatten(),
+        'correlation': correlation.flatten(), # <-- CORRECTED
         'ratio_change': ratio_change.flatten()
     }
     return pd.DataFrame(feature_data)
 
-def create_rule_based_labels(coherence: np.ndarray, slope: np.ndarray) -> np.ndarray:
+def create_rule_based_labels(correlation: np.ndarray, slope: np.ndarray) -> np.ndarray:
     """Creates a 'answer key' for training based on simple rules."""
-    is_low_coherence = coherence < 0.25
+    # Rule: a "landslide" is where correlation is low (< 0.3) AND slope is high (> 30)
+    is_low_correlation = correlation < 0.3 # <-- CORRECTED
     is_high_slope = slope > 30
-    labels = is_low_coherence & is_high_slope
+    labels = is_low_correlation & is_high_slope
     return labels.flatten().astype(int)
