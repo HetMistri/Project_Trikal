@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'mlapi',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -74,13 +76,40 @@ WSGI_APPLICATION = 'himaliyan_sentinel.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Anytime Event Admin",
+    "site_header": "Anytime Event",
+    "welcome_sign": "Welcome to Anytime Event Admin Portal",
+    "site_logo": "../static/img/Any-Time-Event-Logo.png",  # Path to the logo
+    "login_logo": "../static/img/Any-Time-Event-Logo.png",  # Path to the login logo
+    "login_logo_dark": "../static/img/Any-Time-Event-Logo.png",  # Path to the dark mode logo (if applicable)
+    "site_icon": "../static/img/Any-Time-Event-Logo.png",  # Path to the favicon (if using the same image)
+    # Other Jazzmin settings...
 }
 
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+import os
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'defaultdb',      # Replace with your database name
+        'USER': 'avnadmin',      # Replace with your database user
+        'PASSWORD': os.getenv('PASSWORD'),  # Replace with your database password
+        'HOST': os.getenv('HOST'),               # Or the IP address of your MySQL server
+        'PORT': os.getenv('PORT'),                    # The default MySQL port
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
