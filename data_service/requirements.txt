@@ -1,0 +1,33 @@
+# requirements.txt - Dependencies for SAR Processing Pipeline
+
+# Core SAR data access and processing
+asf-search>=7.0.0
+rasterio>=1.3.0
+shapely>=2.0.0
+
+# Geospatial analysis
+geopandas>=0.14.0
+pyproj>=3.4.0
+fiona>=1.9.0
+
+# Scientific computing and analysis
+numpy>=1.24.0
+scipy>=1.10.0
+scikit-image>=0.20.0
+matplotlib>=3.7.0
+pandas>=2.0.0
+
+# Optional SAR processing libraries (install if needed)
+# gdal>=3.6.0  # Uncomment if GDAL is needed
+# opencv-python>=4.7.0  # For advanced image processing
+# xarray>=2023.1.0  # For multi-dimensional arrays
+
+# Progress and utilities
+tqdm>=4.64.0
+click>=8.0.0
+colorama>=0.4.6  # For colored terminal output
+
+# Development and testing (optional)
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
