@@ -31,7 +31,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'auth1',
     'mlapi',
     'django.contrib.admin',
     'django.contrib.auth',
