@@ -34,7 +34,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'rest_framework',
-    'corsheaders',
+    'corsheaders',  # Add CORS headers support
     'mlapi',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,7 +46,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware (must be before CommonMiddleware)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -159,9 +159,17 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+# CORS Configuration
+# Allow frontend to make requests to backend
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",  # Alternative localhost
+]
+
+# Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
+
+# Allow these HTTP methods
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -170,6 +178,8 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+# Allow these headers
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
