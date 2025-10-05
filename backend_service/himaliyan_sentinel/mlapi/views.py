@@ -41,7 +41,7 @@ class MapSelectorView(TemplateView):
     template_name = 'mlapi/map_selector.html'
 
 class AOIFormatView(APIView):
-    def post(self, request):
+    def get(self, request):
         # Expected input:
         # {
         #   "latitude": 23.0225,
