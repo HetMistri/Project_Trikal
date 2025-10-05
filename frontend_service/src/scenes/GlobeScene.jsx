@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import Earth from '../components/3d/Earth';
@@ -6,21 +6,29 @@ import Stars from '../components/3d/Stars';
 import SatelliteSwarm from '../components/3d/SatelliteSwarm';
 import SpaceAtmosphere from '../components/3d/SpaceAtmosphere';
 import AtmosphereGlow from '../components/3d/AtmosphereGlow';
+import CameraController from '../components/3d/CameraController';
 import { SCENE_SETTINGS } from '../utils/constants';
 import useAppStore from '../store/appStore';
 
 /**
  * Globe Scene Component
  * Main 3D Earth globe with orbiting satellites
+ * Phase 5: Integrated with camera animation system
  */
 const GlobeScene = () => {
   const { camera } = SCENE_SETTINGS;
   const { selectSatellite } = useAppStore();
+  const controlsRef = useRef();
+  const satellitePositionsRef = useRef([]);
 
-  const handleSatelliteClick = (satellite, isPokeball) => {
-    selectSatellite(satellite.id);
-    console.log('🛰️ Satellite selected:', satellite.name);
-    if (isPokeball) {
+  const handleSatelliteClick = (satelliteData) => {
+    // Pass the full satellite data including position and instance index
+    selectSatellite(satelliteData);
+    console.log('🛰️ Satellite selected:', satelliteData.name);
+    console.log('📍 Position:', satelliteData.position);
+    console.log('🔢 Instance index:', satelliteData.instanceIndex);
+    
+    if (satelliteData.isPokeball) {
       console.log('🎉 CONGRATULATIONS! You found the secret Pokéball satellite!');
       console.log('🔴⚪ Gotta catch \'em all!');
     }
@@ -40,6 +48,7 @@ const GlobeScene = () => {
 
         {/* Orbit Controls for user interaction */}
         <OrbitControls
+          ref={controlsRef}
           enablePan={false}
           enableZoom={true}
           enableRotate={true}
@@ -47,6 +56,12 @@ const GlobeScene = () => {
           maxDistance={160}
           autoRotate={true}
           autoRotateSpeed={0.5}
+        />
+
+        {/* Phase 5: Camera Animation Controller */}
+        <CameraController 
+          controlsRef={controlsRef}
+          satellitePositionsRef={satellitePositionsRef}
         />
 
         {/* Lighting - Day/Night cycle with lighter nights */}
@@ -93,6 +108,7 @@ const GlobeScene = () => {
           <SatelliteSwarm 
             count={200} 
             onSatelliteClick={handleSatelliteClick}
+            positionsRefOut={satellitePositionsRef}
           />
           
           {/* AtmosphereGlow disabled per user request */}

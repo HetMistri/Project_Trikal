@@ -4,6 +4,7 @@ import TransitionManager from './scenes/TransitionManager';
 import LoadingScene from './scenes/LoadingScene';
 import GlobeScene from './scenes/GlobeScene';
 import MapScene from './scenes/MapScene';
+import CameraDebugPanel from './components/ui/CameraDebugPanel';
 import { preloadAllAssets } from './utils/assetLoader';
 import './App.css';
 import './styles/theme.css';
@@ -47,6 +48,9 @@ function App() {
       <TransitionManager>
         {renderScene()}
       </TransitionManager>
+      
+      {/* Phase 5: Camera Debug Panel (remove in production) */}
+      {currentScene === 'globe' && <CameraDebugPanel />}
     </div>
   );
 }
