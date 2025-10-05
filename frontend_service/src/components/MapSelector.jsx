@@ -63,12 +63,33 @@ function MapSelector() {
     console.log('� URL:', `${BACKEND_URL}/api/aoi-format/`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
+    // try {
+    //   // Send to Django backend
+    //   const response = await axios.post(
+    //     `${BACKEND_URL}/api/aoi-format/`,
+    //     payload
+    //   );
+
+  console.log('📍 Sending to Backend:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔧 Method: POST');
+    console.log('🔗 URL:', `${BACKEND_URL}/api/aoi-format/`);
+    console.log('📌 Latitude:', payload.latitude);
+    console.log('📌 Longitude:', payload.longitude);
+    console.log('📦 Payload:', JSON.stringify(payload, null, 2));
+    console.log('📋 Headers: Content-Type: application/json');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     try {
-      // Send to Django backend
-      const response = await axios.post(
-        `${BACKEND_URL}/api/aoi-format/`,
-        payload
-      );
+      // Send to Django backend with explicit configuration
+      const response = await axios({
+        method: 'POST',  // Explicitly set POST method
+        url: `${BACKEND_URL}/api/aoi-format/`,
+        data: payload,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       console.log('✅ Backend Response:', response.data);
       
