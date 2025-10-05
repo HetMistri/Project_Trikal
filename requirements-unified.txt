@@ -1,0 +1,46 @@
+# Unified Project Requirements - Generated from integration analysis
+
+# Core Framework
+Django>=5.2.5
+djangorestframework>=3.16.1
+djangorestframework-simplejwt>=5.5.1
+django-cors-headers>=4.7.0
+
+# Geospatial Data Processing
+rasterio>=1.4.3
+shapely>=2.1.2
+geopandas>=1.1.1
+pyproj>=3.7.2
+fiona>=1.10.1
+GDAL>=3.11.1
+
+# SAR Data Processing
+asf-search>=10.1.0
+
+# Scientific Computing & ML
+numpy>=2.3.3
+pandas>=2.3.2
+scipy>=1.16.2
+scikit-learn
+scikit-image>=0.25.2
+xgboost
+
+# Utilities
+requests>=2.32.5
+python-dotenv>=1.1.1
+tqdm>=4.67.1
+click>=8.3.0
+colorama>=0.4.6
+
+# Development & Testing
+pytest>=8.4.2
+pytest-cov>=7.0.0
+black>=25.9.0
+flake8>=7.3.0
+
+# Geographic utilities
+geopy>=2.4.1
+
+# Date/Time handling
+pytz>=2025.2
+python-dateutil>=2.9.0.post0

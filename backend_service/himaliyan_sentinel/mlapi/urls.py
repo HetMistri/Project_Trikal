@@ -9,10 +9,11 @@
 #     path('', include(router.urls)),
 # ]
 from django.urls import path
-from .views import MLRequestView, AOIFormatView, MapSelectorView
+from .views import MLRequestView, AOIFormatView, MapSelectorView, ServiceStatusView
 
 urlpatterns = [
     path('', MapSelectorView.as_view(), name='map-selector'),
     path('ml-request/', MLRequestView.as_view(), name='ml-request'),
     path('aoi-format/', AOIFormatView.as_view(), name='aoi-format'),
+    path('service-status/', ServiceStatusView.as_view(), name='service-status'),
 ]

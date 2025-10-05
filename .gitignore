@@ -75,3 +75,42 @@ yarn-debug.log
 *.h5
 data/
 *.json
+# Analysis and documentation
+PROJECT_ANALYSIS_*
+
+# Virtual environment variations
+.venv/
+venv/
+env/
+ENV/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Data processing outputs
+data_processing/data/
+data_processing/logs/
+*.log
+
+# ML model files (if large)
+*.pkl
+*.joblib
+models/*.json
+
+# Backup files
+*.bak
+*.backup
+*.orig
