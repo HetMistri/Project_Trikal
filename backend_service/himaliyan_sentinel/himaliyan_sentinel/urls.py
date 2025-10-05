@@ -15,10 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
+from django.views.generic import RedirectView
+from django.urls import reverse_lazy
 
 urlpatterns = [
+    path('', RedirectView.as_view(url=reverse_lazy('map-selector')), name='root'),
     path('admin/', admin.site.urls),
-    path('auth/',include('auth1.urls')),
-    path('api/' , include('mlapi.urls'))
+    path('api/', include('mlapi.urls'))
 ]

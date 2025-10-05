@@ -1,0 +1,332 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Himalayan Sentinel - Map Selector</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .map-selector-container {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .header-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .header-panel h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .header-panel p {
+            margin: 10px 0 0;
+            color: #666;
+        }
+
+        .map-wrapper {
+            height: 100%;
+            width: 100%;
+        }
+
+        .leaflet-container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .coordinates-display {
+            position: absolute;
+            top: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            font-size: 14px;
+        }
+
+        .info-item {
+            margin: 5px 0;
+        }
+
+        .action-buttons {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .confirm-button, .clear-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .confirm-button {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .confirm-button:hover {
+            background: #45a049;
+        }
+
+        .clear-button {
+            background: #f44336;
+            color: white;
+        }
+
+        .clear-button:hover {
+            background: #da190b;
+        }
+
+        .confirm-button:disabled, .clear-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 6px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .message.success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .message.error {
+            background: #f44336;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="map-selector-root"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        let position = null;
+        let zoomLevel = 2;
+        let map;
+
+        function init() {
+            // Initialize map
+            map = L.map('map-selector-root').setView([20, 0], 2);
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18,
+                minZoom: 2
+            }).addTo(map);
+
+            // Set map boundaries
+            map.setMaxBounds([[-90, -180], [90, 180]]);
+            map.setMinZoom(2);
+            map.setMaxZoom(18);
+
+            // Add click event listener
+            map.on('click', function(e) {
+                if (position && position.marker) {
+                    map.removeLayer(position.marker);
+                }
+                position = {
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng,
+                    marker: L.marker(e.latlng).addTo(map)
+                };
+                updateCoordinatesDisplay();
+                showActionButtons();
+            });
+
+            // Add zoom event listener
+            map.on('zoomend', function() {
+                zoomLevel = map.getZoom();
+                updateInfoPanel();
+            });
+
+            // Initial setup
+            createHeaderPanel();
+            createCoordinatesDisplay();
+            createInfoPanel();
+            createActionButtons();
+        }
+
+        function createHeaderPanel() {
+            const header = document.createElement('div');
+            header.className = 'header-panel';
+            header.innerHTML = `
+                <h1>Select Location on Map</h1>
+                <p class="instructions">Click anywhere on the map to select coordinates.</p>
+            `;
+            document.body.appendChild(header);
+        }
+
+        function createCoordinatesDisplay() {
+            const display = document.createElement('div');
+            display.className = 'coordinates-display';
+            display.style.display = 'none';
+            display.id = 'coordinates-display';
+            document.body.appendChild(display);
+        }
+
+        function updateCoordinatesDisplay() {
+            const display = document.getElementById('coordinates-display');
+            if (position) {
+                display.style.display = 'block';
+                display.innerHTML = `
+                    <strong>Selected Coordinates:</strong><br>
+                    Latitude: ${position.lat.toFixed(6)}<br>
+                    Longitude: ${position.lng.toFixed(6)}
+                `;
+            } else {
+                display.style.display = 'none';
+            }
+        }
+
+        function createInfoPanel() {
+            const panel = document.createElement('div');
+            panel.className = 'info-panel';
+            panel.id = 'info-panel';
+            document.body.appendChild(panel);
+            updateInfoPanel();
+        }
+
+        function updateInfoPanel() {
+            const panel = document.getElementById('info-panel');
+            panel.innerHTML = `
+                <div class="info-item">🔍 Zoom: ${zoomLevel}/18</div>
+                ${position ? '<div class="info-item">📍 Location selected</div>' : ''}
+            `;
+        }
+
+        function createActionButtons() {
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.className = 'action-buttons';
+            buttonsDiv.id = 'action-buttons';
+            buttonsDiv.style.display = 'none';
+            buttonsDiv.innerHTML = `
+                <button onclick="handleConfirm()" class="confirm-button">✓ Confirm & Send</button>
+                <button onclick="handleClear()" class="clear-button">✕ Clear</button>
+            `;
+            document.body.appendChild(buttonsDiv);
+        }
+
+        function showActionButtons() {
+            document.getElementById('action-buttons').style.display = 'flex';
+        }
+
+        function handleConfirm() {
+            if (!position) return;
+
+            const payload = {
+                latitude: position.lat,
+                longitude: position.lng
+            };
+
+            fetch('/api/aoi-format/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                showMessage('✅ Coordinates sent successfully!', 'success');
+                console.log('Server response:', data);
+            })
+            .catch(error => {
+                showMessage('⚠️ Error sending coordinates', 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        function handleClear() {
+            if (position && position.marker) {
+                map.removeLayer(position.marker);
+            }
+            position = null;
+            updateCoordinatesDisplay();
+            updateInfoPanel();
+            document.getElementById('action-buttons').style.display = 'none';
+        }
+
+        function showMessage(text, type) {
+            const existingMessage = document.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            document.body.appendChild(message);
+
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        // Initialize when document is ready
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

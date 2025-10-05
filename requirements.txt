@@ -5,3 +5,7 @@ rasterio
 xgboost
 scikit-learn
 scikit-image
+djangorestframework
+shapely
+pytz
+dotenv

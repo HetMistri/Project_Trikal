@@ -1,4 +1,0 @@
-djangorestframework
-shapely
-pytz
-dotenv
