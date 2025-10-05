@@ -9,3 +9,4 @@ djangorestframework
 shapely
 pytz
 dotenv
+psycopg2
