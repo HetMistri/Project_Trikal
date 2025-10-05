@@ -1,0 +1,363 @@
+/**
+ * Loading Screen Styles
+ * Dark futuristic design with particle effects and animations
+ */
+
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #0a0e27 0%, #000000 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+/* Particle Canvas */
+.particle-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Loading Content */
+.loading-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    padding: 2rem;
+}
+
+/* Brand Container */
+.brand-container {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.brand-title {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5rem;
+    background: linear-gradient(135deg, #00f3ff, #b800ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+    margin: 0;
+    position: relative;
+    animation: titlePulse 3s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+    0%, 100% {
+        filter: brightness(1);
+    }
+
+    50% {
+        filter: brightness(1.2);
+    }
+}
+
+/* Glitch Effect for Brand */
+.brand-container.glitch .brand-title::before,
+.brand-container.glitch .brand-title::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #00f3ff, #b800ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.brand-container.glitch .brand-title::before {
+    animation: glitch-1 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+    z-index: -1;
+}
+
+.brand-container.glitch .brand-title::after {
+    animation: glitch-2 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
+    z-index: -2;
+}
+
+@keyframes glitch-1 {
+    0%, 100% {
+        transform: translate(0);
+        opacity: 0.8;
+    }
+
+    20% {
+        transform: translate(-3px, 3px);
+        opacity: 0.6;
+    }
+
+    40% {
+        transform: translate(-3px, -3px);
+        opacity: 0.7;
+    }
+
+    60% {
+        transform: translate(3px, 3px);
+        opacity: 0.6;
+    }
+
+    80% {
+        transform: translate(3px, -3px);
+        opacity: 0.8;
+    }
+}
+
+@keyframes glitch-2 {
+    0%, 100% {
+        transform: translate(0);
+        opacity: 0.8;
+    }
+
+    20% {
+        transform: translate(3px, -3px);
+        opacity: 0.7;
+    }
+
+    40% {
+        transform: translate(3px, 3px);
+        opacity: 0.6;
+    }
+
+    60% {
+        transform: translate(-3px, -3px);
+        opacity: 0.7;
+    }
+
+    80% {
+        transform: translate(-3px, 3px);
+        opacity: 0.8;
+    }
+}
+
+.brand-subtitle {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.3rem;
+    color: #00f3ff;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+    opacity: 0.7;
+}
+
+/* Progress Container */
+.progress-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    min-width: 400px;
+}
+
+/* Progress Bar */
+.progress-bar-wrapper {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 243, 255, 0.1);
+    border-radius: 2px;
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00f3ff, #b800ff);
+    border-radius: 2px;
+    transition: width 0.3s ease-out;
+    position: relative;
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #00f3ff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #00f3ff, 0 0 30px #00f3ff;
+    animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.7;
+    }
+}
+
+.progress-bar-glow {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    height: 24px;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(0, 243, 255, 0.3),
+            rgba(184, 0, 255, 0.3),
+            transparent);
+    filter: blur(10px);
+    transition: width 0.3s ease-out;
+    pointer-events: none;
+}
+
+/* Counter */
+.counter-container {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 4rem;
+    font-weight: 700;
+    color: #00f3ff;
+    display: flex;
+    align-items: baseline;
+    text-shadow: 0 0 20px rgba(0, 243, 255, 0.7);
+    line-height: 1;
+}
+
+.counter-value {
+    min-width: 3ch;
+    text-align: right;
+}
+
+.counter-percent {
+    font-size: 2.5rem;
+    margin-left: 0.2rem;
+    opacity: 0.8;
+}
+
+/* Loading Text */
+.loading-text {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 1rem;
+    letter-spacing: 0.1rem;
+    color: #a0a0a0;
+    text-transform: uppercase;
+    animation: textFade 2s ease-in-out infinite;
+}
+
+@keyframes textFade {
+    0%, 100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Scanlines Effect */
+.scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg,
+            rgba(0, 0, 0, 0.1),
+            rgba(0, 0, 0, 0.1) 1px,
+            transparent 1px,
+            transparent 2px);
+    pointer-events: none;
+    animation: scanlines-move 10s linear infinite;
+    z-index: 3;
+    opacity: 0.3;
+}
+
+@keyframes scanlines-move {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(100px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .brand-title {
+        font-size: 2rem;
+        letter-spacing: 0.3rem;
+    }
+
+    .brand-subtitle {
+        font-size: 0.7rem;
+        letter-spacing: 0.2rem;
+    }
+
+    .progress-container {
+        min-width: 300px;
+    }
+
+    .counter-container {
+        font-size: 3rem;
+    }
+
+    .counter-percent {
+        font-size: 2rem;
+    }
+
+    .loading-text {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-title {
+        font-size: 1.5rem;
+        letter-spacing: 0.2rem;
+    }
+
+    .progress-container {
+        min-width: 250px;
+    }
+
+    .counter-container {
+        font-size: 2.5rem;
+    }
+
+    .counter-percent {
+        font-size: 1.5rem;
+    }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .brand-title,
+    .progress-bar-fill::after,
+    .loading-text,
+    .scanlines {
+        animation: none;
+    }
+
+    .brand-container.glitch .brand-title::before,
+    .brand-container.glitch .brand-title::after {
+        display: none;
+    }
+}
