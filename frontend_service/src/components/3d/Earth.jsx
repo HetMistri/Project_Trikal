@@ -70,7 +70,7 @@ const Earth = () => {
     // Clone the scene to avoid issues
     const clonedScene = gltf.scene.clone();
     
-    // Apply proper materials and textures
+    // Apply proper materials and textures with enhanced shading
     clonedScene.traverse((child) => {
       if (child.isMesh) {
         // Check if material has no texture, apply Earth texture
@@ -78,17 +78,41 @@ const Earth = () => {
           console.log('⚠️ No texture found on mesh, applying Earth texture');
           child.material = new THREE.MeshStandardMaterial({
             map: earthTexture,
-            metalness: 0.1,
-            roughness: 0.7,
+            metalness: 0.0,
+            roughness: 1.0,
+            // Responds better to lighting for day/night effect
+            emissive: '#000000',
+            emissiveIntensity: 0,
           });
         } else {
-          // Material has texture, just make sure it's visible
+          // Material has texture, enhance it with proper lighting response
           child.material.needsUpdate = true;
+          
+          // Adjust material properties for better day/night shading
+          if (child.material.roughness !== undefined) {
+            child.material.roughness = 1.0; // Full diffuse for realistic Earth
+          }
+          if (child.material.metalness !== undefined) {
+            child.material.metalness = 0.0; // Earth is not metallic
+          }
+          
+          // Ensure material responds to lights properly
+          if (child.material.type === 'MeshBasicMaterial') {
+            // Convert basic material to standard for lighting
+            const oldMap = child.material.map;
+            child.material = new THREE.MeshStandardMaterial({
+              map: oldMap,
+              metalness: 0.0,
+              roughness: 1.0,
+            });
+          }
+          
           if (child.material.map) {
             child.material.map.needsUpdate = true;
           }
         }
         
+        // Enable shadows for depth
         child.castShadow = true;
         child.receiveShadow = true;
       }
@@ -113,6 +137,17 @@ const Earth = () => {
           rotation={[0, 0, earth.tilt * (Math.PI / 180)]}
           position={[0, 0, 0]}
         />
+        
+        {/* Add subtle fog/atmosphere effect around Earth */}
+        <mesh>
+          <sphereGeometry args={[earth.radius * 1.02, 32, 32]} />
+          <meshBasicMaterial
+            color="#0a0e27"
+            transparent={true}
+            opacity={0.05}
+            side={THREE.BackSide}
+          />
+        </mesh>
       </group>
     );
   }
@@ -124,8 +159,8 @@ const Earth = () => {
       <sphereGeometry args={[earth.radius, earth.segments, earth.segments]} />
       <meshStandardMaterial 
         map={earthTexture}
-        metalness={0.1}
-        roughness={0.7}
+        metalness={0.0}
+        roughness={1.0}
       />
     </mesh>
   );
