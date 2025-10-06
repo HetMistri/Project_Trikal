@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import axios from 'axios';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import { useState } from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import axios from "axios";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import useAppStore from "../store/appStore";
 
 // Fix for default marker icon issue in react-leaflet
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -34,20 +35,22 @@ function MapSelector() {
   const [position, setPosition] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(2);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  
-  // Backend URL - can be configured via .env
-  const BACKEND_URL = 'http://localhost:8000';
+  const [message, setMessage] = useState("");
+  const setBackendResponse = useAppStore((s) => s.setBackendResponse);
+
+  // Backend URL - can be configured via Vite .env (VITE_BACKEND_URL)
+  const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
   const handleConfirm = async () => {
     if (!position) {
-      setMessage('⚠️ Please select a location on the map first!');
-      setTimeout(() => setMessage(''), 3000);
+      setMessage("⚠️ Please select a location on the map first!");
+      setTimeout(() => setMessage(""), 3000);
       return;
     }
 
     setLoading(true);
-    setMessage('');
+    setMessage("");
 
     // Create payload with coordinates
     const payload = {
@@ -55,81 +58,67 @@ function MapSelector() {
       longitude: position.lng,
     };
 
-    // Log to console for debugging
-    console.log('📍 Sending to Backend:');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📌 Latitude:', payload.latitude);
-    console.log('📌 Longitude:', payload.longitude);
-    console.log('� URL:', `${BACKEND_URL}/api/aoi-format/`);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    // try {
-    //   // Send to Django backend
-    //   const response = await axios.post(
-    //     `${BACKEND_URL}/api/aoi-format/`,
-    //     payload
-    //   );
-
-  console.log('📍 Sending to Backend:');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🔧 Method: POST');
-    console.log('🔗 URL:', `${BACKEND_URL}/api/aoi-format/`);
-    console.log('📌 Latitude:', payload.latitude);
-    console.log('📌 Longitude:', payload.longitude);
-    console.log('📦 Payload:', JSON.stringify(payload, null, 2));
-    console.log('📋 Headers: Content-Type: application/json');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    // Log to console for debugging (single concise block)
+    console.log("📍 Sending to Backend:", {
+      method: "POST",
+      url: `${BACKEND_URL}/api/aoi-format/`,
+      payload,
+    });
 
     try {
       // Send to Django backend with explicit configuration
       const response = await axios({
-        method: 'POST',  // Explicitly set POST method
+        method: "POST", // Explicitly set POST method
         url: `${BACKEND_URL}/api/aoi-format/`,
         data: payload,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
-      console.log('✅ Backend Response:', response.data);
-      
+      console.log("✅ Backend Response:", response.data);
+
       // Show success message with backend response
-      const aoi = response.data.aoi || 'N/A';
-      const startDate = response.data.input_date?.start || 'N/A';
-      const endDate = response.data.input_date?.end || 'N/A';
-      
-      setMessage(
+      const aoi = response.data.aoi || "N/A";
+      const startDate = response.data.input_date?.start || "N/A";
+      const endDate = response.data.input_date?.end || "N/A";
+      const responseMessage =
         `✅ Success! Data sent to backend.\n` +
-        `AOI: ${aoi.substring(0, 50)}${aoi.length > 50 ? '...' : ''}\n` +
-        `Date Range: ${startDate.substring(0, 10)} to ${endDate.substring(0, 10)}`
-      );
+        `AOI: ${aoi.substring(0, 50)}${aoi.length > 50 ? "..." : ""}\n` +
+        `Date Range: ${startDate.substring(0, 10)} to ${endDate.substring(
+          0,
+          10
+        )}`;
+
+      // store full response for UI / reporting
+      setBackendResponse(response.data);
+
+      setMessage(responseMessage);
 
       // Auto-hide success message after 7 seconds
-      setTimeout(() => setMessage(''), 7000);
-      
+      setTimeout(() => setMessage(""), 7000);
     } catch (error) {
-      console.error('❌ Error sending to backend:', error);
-      
-      let errorMessage = '❌ Error sending to backend.\n';
-      
+      console.error("❌ Error sending to backend:", error);
+
+      let errorMessage = "❌ Error sending to backend.\n";
+
       if (error.response) {
         // Server responded with error status (4xx, 5xx)
         errorMessage += `Status: ${error.response.status}\n`;
         errorMessage += `Message: ${JSON.stringify(error.response.data)}`;
       } else if (error.request) {
         // Request was made but no response received
-        errorMessage += 'No response from server.\n';
-        errorMessage += 'Is Django running at http://localhost:8000?';
+        errorMessage += "No response from server.\n";
+        errorMessage += "Is Django running at http://localhost:8000?";
       } else {
         // Something else happened
         errorMessage += error.message;
       }
-      
+
       setMessage(errorMessage);
-      
+
       // Auto-hide error message after 10 seconds
-      setTimeout(() => setMessage(''), 10000);
-      
+      setTimeout(() => setMessage(""), 10000);
     } finally {
       setLoading(false);
     }
@@ -141,7 +130,8 @@ function MapSelector() {
       <div className="header-panel">
         <h1>Select Location on Map</h1>
         <p className="instructions">
-          Click anywhere on the map to select coordinates. Data will be sent to Django backend.
+          Click anywhere on the map to select coordinates. Data will be sent to
+          Django backend.
         </p>
       </div>
 
@@ -166,7 +156,10 @@ function MapSelector() {
           maxZoom={18}
           scrollWheelZoom={true}
           zoomControl={true}
-          maxBounds={[[-90, -180], [90, 180]]}
+          maxBounds={[
+            [-90, -180],
+            [90, 180],
+          ]}
           maxBoundsViscosity={1.0}
         >
           <TileLayer
@@ -175,8 +168,8 @@ function MapSelector() {
             maxZoom={19}
             minZoom={1}
           />
-          <LocationMarker 
-            position={position} 
+          <LocationMarker
+            position={position}
             setPosition={setPosition}
             setZoomLevel={setZoomLevel}
           />
@@ -185,14 +178,8 @@ function MapSelector() {
 
       {/* Info panel showing zoom level */}
       <div className="info-panel">
-        <div className="info-item">
-          🔍 Zoom: {zoomLevel}/18
-        </div>
-        {position && (
-          <div className="info-item">
-            📍 Location selected
-          </div>
-        )}
+        <div className="info-item">🔍 Zoom: {zoomLevel}/18</div>
+        {position && <div className="info-item">📍 Location selected</div>}
       </div>
 
       {/* Floating action buttons */}
@@ -203,12 +190,12 @@ function MapSelector() {
             disabled={loading}
             className="confirm-button"
           >
-            {loading ? '⏳ Sending...' : '✓ Send to Backend'}
+            {loading ? "⏳ Sending..." : "✓ Send to Backend"}
           </button>
           <button
             onClick={() => {
               setPosition(null);
-              setMessage('');
+              setMessage("");
             }}
             className="clear-button"
             disabled={loading}
@@ -220,7 +207,10 @@ function MapSelector() {
 
       {/* Floating message */}
       {message && (
-        <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
+        <div
+          className={`message ${message.includes("✅") ? "success" : "error"}`}
+          style={{ whiteSpace: "pre-wrap" }}
+        >
           {message}
         </div>
       )}
