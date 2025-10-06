@@ -1,7 +1,2 @@
-fastapi[all]
-numpy
-pandas
-rasterio
-xgboost
-scikit-learn
-scikit-image
+# Consolidated pointer to repository root requirements
+-r ../requirements.txt

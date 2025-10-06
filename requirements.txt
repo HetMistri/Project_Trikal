@@ -1,12 +1,36 @@
-fastapi[all]
-numpy
-pandas
-rasterio
-xgboost
-scikit-learn
-scikit-image
-djangorestframework
-shapely
-pytz
-dotenv
-psycopg2
+# Consolidated project requirements (pinned where available)
+
+# Core frameworks
+fastapi[all]==0.117.1
+djangorestframework==3.16.1
+
+# Numerical / data
+numpy==2.3.2
+pandas==2.3.1
+scipy==1.16.1
+
+# Geospatial / raster
+rasterio==1.4.3
+shapely>=2.0.0
+geopandas>=0.14.0
+
+# Machine learning
+xgboost==3.0.5
+scikit-learn==1.7.1
+scikit-image>=0.20.0
+joblib==1.5.1
+
+# Utilities
+python-dotenv==1.1.1
+psycopg2==2.9.10
+pytz==2025.2
+matplotlib==3.10.5
+tqdm>=4.64.0
+
+# HTTP / ASGI
+uvicorn==0.37.0
+httpx==0.28.1
+
+# Notes:
+# - This consolidated file is the single source of Python dependencies for the repository.
+# - Subfolders should reference it (e.g. `-r ../requirements.txt`).
