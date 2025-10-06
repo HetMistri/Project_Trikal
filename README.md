@@ -119,3 +119,21 @@ Project Link: [https://github.com/HetMistri/SpaceApps_Project](https://github.co
 [Mapbox-url]: https://www.mapbox.com/
 [Docker-badge]: https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
+
+## Local Python development
+
+If you prefer a local Python virtual environment instead of Docker, use the provided PowerShell helper:
+
+1. Run the setup script (PowerShell):
+
+```powershell
+.\venv_setup.ps1
+```
+
+2. Activate the venv in the current PowerShell session:
+
+```powershell
+. .\.venv\Scripts\Activate.ps1
+```
+
+This will create a `.venv` folder and install the consolidated `requirements.txt` at the repository root.
