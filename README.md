@@ -19,18 +19,18 @@
 
 Project Trikal addresses the critical issue of "alert fatigue" caused by vague, regional warnings for natural disasters. Current systems often issue broad alerts for entire districts, making it impossible for citizens and officials to assess their immediate, local risk. This leads to a dangerous desensitization where real threats are ignored.
 
-Our solution is an interactive web platform that provides specific, targeted, and **explainable** insights for at-risk locations. By fusing multi-modal satellite data (SAR and DEM) and leveraging a custom machine learning pipeline, Project Trikal generates a clear, human-readable hypothesis that explains not only *what* the risk level is, but *why*. This transforms noisy, large-scale data into actionable intelligence, empowering local authorities to make proactive, life-saving decisions.
+Our solution is an interactive web platform that provides specific, targeted, and **explainable** insights for at-risk locations. By fusing multi-modal satellite data (SAR and DEM) and leveraging a custom machine learning pipeline, Project Trikal generates a clear, human-readable hypothesis that explains not only _what_ the risk level is, but _why_. This transforms noisy, large-scale data into actionable intelligence, empowering local authorities to make proactive, life-saving decisions.
 
 ### Built With
 
 This project was built with a modern, professional tech stack.
 
-* [![Python][Python-badge]][Python-url]
-* [![FastAPI][FastAPI-badge]][FastAPI-url]
-* [![XGBoost][XGBoost-badge]][XGBoost-url]
-* [![React][React.js-badge]][React.js-url]
-* [![Mapbox][Mapbox-badge]][Mapbox-url]
-* [![Docker][Docker-badge]][Docker-url]
+- [![Python][Python-badge]][Python-url]
+- [![FastAPI][FastAPI-badge]][FastAPI-url]
+- [![XGBoost][XGBoost-badge]][XGBoost-url]
+- [![React][React.js-badge]][React.js-url]
+- [![Mapbox][Mapbox-badge]][Mapbox-url]
+- [![Docker][Docker-badge]][Docker-url]
 
 ## Getting Started
 
@@ -39,7 +39,8 @@ To get a local copy up and running, follow these simple steps.
 ### Prerequisites
 
 You must have **Docker** and **Docker Compose** installed on your system.
-* [Docker Installation Guide](https://docs.docker.com/get-docker/)
+
+- [Docker Installation Guide](https://docs.docker.com/get-docker/)
 
 ### Installation
 
@@ -75,11 +76,11 @@ Once the application is running, the web interface will display a map with sever
 This project is a monorepo containing three primary services:
 
 Project_Trikal/
-├── backend/          # Django Backend API
-├── frontend/         # React Frontend UI
-└── ml_service/       # FastAPI ML Service & logic
-├── data/             # For storing pre-processed data (ignored by Git)
-└── docker-compose.yml  # Master orchestration file
+├── backend/ # Django Backend API
+├── frontend/ # React Frontend UI
+└── ml_service/ # FastAPI ML Service & logic
+├── data/ # For storing pre-processed data (ignored by Git)
+└── docker-compose.yml # Master orchestration file
 
 ## Roadmap / Future Work
 
@@ -94,18 +95,19 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## The Team
 
-* **Het Mistry** - Team Lead, DevOps & Full-Stack Dev
-* **Om Patel** - AI/ML & Geospatial Data Science
-* **Nakshi Shah** - Backend & Geospatial Backend
-* **Takshil Patel** - SAR Image Processing & Data Collection
-* **Yatrik Prajapati** - Cross Integration & 3D Models
+- **Het Mistry** - Team Lead, DevOps & Full-Stack Dev
+- **Om Patel** - AI/ML & Geospatial Data Science
+- **Nakshi Shah** - Backend & Geospatial Backend
+- **Takshil Patel** - SAR Image Processing & Data Collection
+- **Yatrik Prajapati** - Cross Integration & 3D Models
 
 Project Link: [https://github.com/HetMistri/SpaceApps_Project](https://github.com/HetMistri/SpaceApps_Project)
 
 ## Acknowledgments
-* NASA Space Apps Challenge 2025
-* NASA, ESA, and all open-data providers
-* The Pydantic, FastAPI, and XGBoost communities
+
+- NASA Space Apps Challenge 2025
+- NASA, ESA, and all open-data providers
+- The Pydantic, FastAPI, and XGBoost communities
 
 [Python-badge]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
 [Python-url]: https://www.python.org/
