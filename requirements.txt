@@ -3,6 +3,7 @@
 # Core frameworks
 fastapi[all]==0.117.1
 djangorestframework==3.16.1
+django-cors-headers==4.3.0
 
 # Numerical / data
 numpy==2.3.2
