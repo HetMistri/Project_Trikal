@@ -1,5 +1,5 @@
 import React from "react";
-import MapInterface from "./MapInterface_Clean";
+import MapInterface from "./MapInterface";
 import "./App.css";
 
 function App() {
