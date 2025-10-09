@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import MapView from "./components/MapView";
+import MapView from "./pages/MapView";
 
 function App() {
   return (
