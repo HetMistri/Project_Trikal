@@ -46,7 +46,7 @@ const MapControls = ({ mapRef, className = "" }) => {
     <>
       {/* Top Controls - Location and Reset */}
       <div
-        className={`absolute top-4 right-4 flex flex-col gap-1 z-[1000] ${className}`}
+        className={`absolute top-2 sm:top-4 right-2 sm:right-4 flex flex-col gap-1 z-[1000] ${className}`}
       >
         <div className="flex flex-col bg-white/10 backdrop-blur-3xl border border-white/20 rounded-lg overflow-hidden shadow-2xl">
           <IconButton
@@ -103,7 +103,7 @@ const MapControls = ({ mapRef, className = "" }) => {
 
       {/* Bottom Controls - Zoom Only */}
       <div
-        className={`absolute bottom-4 right-4 flex flex-col gap-1 z-[1000] ${className}`}
+        className={`absolute bottom-2 sm:bottom-4 right-2 sm:right-4 flex flex-col gap-1 z-[1000] ${className}`}
       >
         <div className="flex flex-col bg-white/10 backdrop-blur-3xl border border-white/20 rounded-lg overflow-hidden shadow-2xl">
           <IconButton

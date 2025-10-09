@@ -66,6 +66,23 @@ const MapView = () => {
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
+  // Mobile detection
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      // Auto-collapse sidebar on mobile
+      if (window.innerWidth < 768) {
+        setSidebarCollapsed(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Map interactions
   const { marker, mapRef, handleMapClick, clearMarker, MapClickHandler } =
     useMapInteractions();
@@ -211,7 +228,7 @@ const MapView = () => {
   };
 
   return (
-    <div className="w-full h-screen relative">
+    <div className="w-full h-screen relative overflow-hidden">
       {/* Full Screen Map Background */}
       <div className="absolute inset-0">
         <MapContainer
@@ -275,6 +292,7 @@ const MapView = () => {
               onShare={handleShare}
               className="z-[500]"
               sidebarCollapsed={sidebarCollapsed}
+              isMobile={isMobile}
             />
           </div>
         )}
@@ -287,6 +305,7 @@ const MapView = () => {
             isVisible={showSummary}
             className="z-[400]"
             sidebarCollapsed={sidebarCollapsed}
+            isMobile={isMobile}
           />
         </div>
 
@@ -301,6 +320,7 @@ const MapView = () => {
               onClear={handleClear}
               className="z-[600]"
               sidebarCollapsed={sidebarCollapsed}
+              isMobile={isMobile}
             />
           </div>
         )}

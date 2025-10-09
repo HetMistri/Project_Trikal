@@ -21,13 +21,18 @@ const AnalysisCard = ({
   return (
     <div
       className={`absolute ${
-        sidebarCollapsed ? "left-20" : "left-[21rem]"
-      } top-4 bottom-4 w-198 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl shadow-2xl transition-all duration-300 flex flex-col ${className}`}
-      style={{ maxHeight: "calc(100vh - 2rem)" }}
+        sidebarCollapsed
+          ? "left-14 sm:left-20"
+          : "left-64 sm:left-72 lg:left-[21rem]"
+      } top-2 sm:top-4 bottom-2 sm:bottom-4 w-72 sm:w-80 lg:w-96 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl shadow-2xl transition-all duration-300 flex flex-col ${className}`}
+      style={{
+        maxHeight: "calc(100vh - 1rem)",
+        "@media (min-width: 640px)": { maxHeight: "calc(100vh - 2rem)" },
+      }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
-        <h2 className="text-xl font-bold text-white mb-2">
+      <div className="p-3 sm:p-4 border-b border-white/10">
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-2">
           Geological Analysis
         </h2>
         <p className="text-sm text-gray-300">

@@ -6,6 +6,41 @@
 @import "./styles/cards.css";
 @import "./styles/ui.css";
 
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .mobile-padding {
+    padding: 0.5rem;
+  }
+
+  .mobile-text {
+    font-size: 0.875rem;
+  }
+
+  .mobile-compact {
+    gap: 0.5rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-padding {
+    padding: 0.75rem;
+  }
+
+  .tablet-text {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .desktop-padding {
+    padding: 1rem;
+  }
+
+  .desktop-text {
+    font-size: 1.125rem;
+  }
+}
+
 /* Leaflet map dark theme styles */
 .leaflet-container {
   background: #1a1a1a !important;

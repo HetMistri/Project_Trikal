@@ -22,12 +22,12 @@ const LocationCard = ({
 
   return (
     <div
-      className={`absolute bottom-24 left-1/2 transform -translate-x-1/2 w-80 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl p-4 shadow-2xl transition-all duration-300 ${className}`}
+      className={`absolute bottom-20 sm:bottom-24 left-1/2 transform -translate-x-1/2 w-72 sm:w-80 lg:w-96 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl p-3 sm:p-4 shadow-2xl transition-all duration-300 ${className}`}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3 sm:mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-white mb-1">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-1">
             Location Details
           </h3>
           <p className="text-sm text-gray-300">

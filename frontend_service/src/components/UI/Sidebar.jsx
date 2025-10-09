@@ -11,16 +11,16 @@ const Sidebar = ({
   return (
     <div
       className={`absolute top-0 left-0 h-full bg-white/10 backdrop-blur-3xl border-r border-white/20 flex flex-col shadow-2xl z-[400] transition-all duration-300 ${
-        isCollapsed ? "w-16" : "w-80"
+        isCollapsed ? "w-12 sm:w-16" : "w-64 sm:w-72 lg:w-80"
       } ${className}`}
     >
       {/* Toggle Button */}
       <button
         onClick={onToggle}
-        className="absolute top-6 right-4 z-10 p-2 text-gray-400 hover:text-white transition-colors duration-200"
+        className="absolute top-4 sm:top-6 right-2 sm:right-4 z-10 p-1 sm:p-2 text-gray-400 hover:text-white transition-colors duration-200"
       >
         <svg
-          className="w-5 h-5"
+          className="w-4 h-4 sm:w-5 sm:h-5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

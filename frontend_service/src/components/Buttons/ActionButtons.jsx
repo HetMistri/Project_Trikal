@@ -11,13 +11,17 @@ const ActionButtons = ({
   className = "",
 }) => {
   const positionClass = showSummary
-    ? `bottom-4 ${sidebarCollapsed ? "left-[26rem]" : "left-[42rem]"}`
-    : "bottom-4 left-1/2 transform -translate-x-1/2";
+    ? `bottom-2 sm:bottom-4 ${
+        sidebarCollapsed
+          ? "left-[18rem] sm:left-[20rem] lg:left-[26rem]"
+          : "left-[22rem] sm:left-[24rem] lg:left-[42rem]"
+      }`
+    : "bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2";
 
   if (showSummary) {
     return (
       <div
-        className={`absolute ${positionClass} flex gap-3 transition-all duration-300 ${className}`}
+        className={`absolute ${positionClass} flex gap-2 sm:gap-3 transition-all duration-300 ${className}`}
       >
         <PrimaryButton
           onClick={onClear}
@@ -32,7 +36,7 @@ const ActionButtons = ({
 
   return (
     <div
-      className={`absolute ${positionClass} flex gap-3 transition-all duration-300 ${className}`}
+      className={`absolute ${positionClass} flex gap-2 sm:gap-3 transition-all duration-300 ${className}`}
     >
       <PrimaryButton onClick={onCancel} variant="ghost" className="shadow-2xl">
         Cancel
